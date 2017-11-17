@@ -1,0 +1,4 @@
+*.zip
+raspbian-latest.img
+output/*
+output
