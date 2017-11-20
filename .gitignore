@@ -1,4 +1,6 @@
 *.zip
 raspbian-latest.img
-output/*
-output
+out/*
+tmp
+tmp/*
+!*.empty

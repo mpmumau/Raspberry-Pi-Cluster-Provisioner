@@ -1,0 +1,9 @@
+---
+- hosts: all
+
+  tasks:
+  - name: remove apache
+    apt: name=apache2 state=absent
+    become: yes
+    become_method: sudo
+...

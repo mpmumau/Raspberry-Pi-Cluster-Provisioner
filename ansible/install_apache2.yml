@@ -1,0 +1,25 @@
+---
+- hosts: all
+
+  tasks:
+  - name: ensure apache is at the latest version
+    apt: name=apache2 state=latest
+    become: yes
+    become_method: sudo
+  - name: configure ports for apache
+    template:
+      src: ./templates/ports.conf.j2
+      dest: /etc/apache2/ports.conf
+      owner: root
+      group: root
+    become: yes
+    become_method: sudo
+  - name: configure default host for apache
+    template:
+      src: ./templates/apache_config.j2
+      dest: /etc/apache2/sites-available/000-default.conf
+      owner: root
+      group: root
+    become: yes
+    become_method: sudo
+...
