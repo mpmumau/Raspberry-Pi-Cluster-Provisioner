@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# File: provision.sh
+# File: flash_disks.sh
 #
 # This shell script provisions a series of 8 Raspbian system images to disk, 
 # in sequential order.
@@ -9,28 +9,26 @@
 # Author: Matt Mumau <mpmumau@gmail.com>
 #
 
-# Count the number of elements in an array.
-function array_count()
-{
-    count=0
-    while [ "x${SYSTEM_NAMES[count]}" != "x" ]
-    do
-       count=$(( $count + 1 ))
-    done
+# Include various utility functions
+source utils.sh
 
-    echo "$count"
+# Console functions
+
+function echo_section_title()
+{
+    echo "============================================"
+    echo "$1"
+    echo "============================================"
 }
 
-# Replace a given token with a given file in the given file.
-function replace_token()
+function echo_subhead()
 {
-    TOKEN=$1
-    REPLACE=$2
-    FILE=$3
-
-    sed -i "s/{{$TOKEN}}/$REPLACE/g" $FILE
+    echo "--------------------------------------------"
+    echo "$1"
+    echo "--------------------------------------------"
 }
 
+# Define directories used by the provisioning process.
 TMP_DIR='./tmp'
 if [ ! -d $TMP_DIR ]; then
     mkdir $TMP_DIR
@@ -69,16 +67,16 @@ RASPBIAN_ZIP_FILE="$TMP_DIR/$RASPBIAN_FILE_ALIAS.zip"
 
 # Image and system names
 SYSTEM_NAMES=(
-        'red'
-        'yellow'
-        'white'
-        'green'
         'orange'
         'blue'
         'black'
         'purple'
+        'red'
+        'yellow'
+        'white'
+        'green'
     )
-SYSTEM_COUNT=$(array_count $SYSTEM_NAMES)
+SYSTEM_COUNT=$(array_count ${SYSTEM_NAMES[@]})
 
 # Returns the system name from the systems array for the given number.
 function get_system_name()
@@ -117,9 +115,7 @@ function set_raspbian_img_data()
 # Make global configuration changes to the base image
 function modify_global_image()
 {
-    echo "-------------------------------------------"
-    echo "Configuring master image"
-    echo "-------------------------------------------"
+    echo_subhead "Configuring global image"
 
     #echo "sector size: $SECTOR_SIZE | boot offset: $BOOT_OFFSET | boot offset bytes: $BOOT_OFFSET_BYTES | sys offset: $SYS_OFFSET | sys_offset bytes: $SYS_OFFSET_BYTES | boot end: $BOOT_END | boot size: $BOOT_SIZE | boot size bytes: $BOOT_SIZE_BYTES"
     mount -v -o offset="$BOOT_OFFSET_BYTES",sizelimit="$BOOT_SIZE_BYTES" -t vfat "$RASPBIAN_IMAGE_FILE" $BOOT_DIR
@@ -149,63 +145,66 @@ function modify_global_image()
     umount $SYS_DIR
 }
 
-function modify_individual_images()
+function modify_individual_image()
 {
-    for i in `seq 1 $SYSTEM_COUNT`;
-    do
-        TMP_SYS_NAME=$(get_system_name $(($i - 1)))
-        TMP_HOST_NAME="rpicluster_$TMP_SYS_NAME"
-        echo "============================================"
-        echo "Provisioning: $TMP_HOST_NAME"
-        echo "============================================"
-        echo "Insert the disk to provision, then run fdisk to get its path."
-        read -p "Press enter when disk inserted..."
-        read -p "Enter the path to the disk to provision: " USER_DISK_PATH
-        echo "--------------------------------------------"
-        echo "Provision Config"
-        echo "--------------------------------------------"
-        printf "Hostname: \t$TMP_HOST_NAME\n"
-        printf "Disk: \t\t$USER_DISK_PATH\n"
-        echo "--------------------------------------------"
-        echo "*IMPORTANT* Check that this is correct!"
-        read -p "Press enter to continue..."
+    i=$1
 
-        RASPBIAN_TMP_IMAGE_FILE="$TMP_DIR/raspbian-image-tmp.img"
-        cp $RASPBIAN_IMAGE_FILE $RASPBIAN_TMP_IMAGE_FILE
+    TMP_SYS_NAME=$(get_system_name $(($i - 1)))
+    TMP_HOST_NAME="rpicluster_$TMP_SYS_NAME"
 
-        sync
+    echo_section_title "Provisioning: $TMP_HOST_NAME"
 
-        mount -v -o offset="$BOOT_OFFSET_BYTES",sizelimit="$BOOT_SIZE_BYTES" -t vfat "$RASPBIAN_TMP_IMAGE_FILE" $BOOT_DIR
-        mount -v -o offset="$SYS_OFFSET_BYTES" -t ext4 "$RASPBIAN_TMP_IMAGE_FILE" $SYS_DIR
+    echo "Insert the disk to provision, then run fdisk to get its path."
+    read -p "Press enter when disk inserted..."
+    read -p "Enter the path to the disk to provision: " USER_DISK_PATH
 
-        echo "$TMP_HOST_NAME" > "$SYS_DIR/etc/hostname"
+    echo_subhead "Provision Config"
+    printf "Hostname: \t$TMP_HOST_NAME\n"
+    printf "Disk: \t\t$USER_DISK_PATH\n"
+    echo "--------------------------------------------"
+    echo "*IMPORTANT* Check that this is correct!"
+    read -p "Press enter to continue..."
 
-        SSHD_CONFIG_TMP="$TMP_DIR/sshd_config.tmp.$i"
-        cp "./config/sshd_config" $SSHD_CONFIG_TMP
-        replace_token "PORT_NUM" "6540$i" $SSHD_CONFIG_TMP
-        cp $SSHD_CONFIG_TMP "$SYS_DIR/etc/ssh/sshd_config"
-        rm $SSHD_CONFIG_TMP
+    RASPBIAN_TMP_IMAGE_FILE="$TMP_DIR/raspbian-image-tmp.img"
+    cp $RASPBIAN_IMAGE_FILE $RASPBIAN_TMP_IMAGE_FILE
 
-        sync
+    sync
 
-        umount $BOOT_DIR
-        umount $SYS_DIR
+    mount -v -o offset="$BOOT_OFFSET_BYTES",sizelimit="$BOOT_SIZE_BYTES" -t vfat "$RASPBIAN_TMP_IMAGE_FILE" $BOOT_DIR
+    mount -v -o offset="$SYS_OFFSET_BYTES" -t ext4 "$RASPBIAN_TMP_IMAGE_FILE" $SYS_DIR
 
-        dd bs=1M if="$RASPBIAN_TMP_IMAGE_FILE" of="$USER_DISK_PATH" conv=fsync status=progress
+    echo "$TMP_HOST_NAME" > "$SYS_DIR/etc/hostname"
 
-        sync
+    SSHD_CONFIG_TMP="$TMP_DIR/sshd_config.tmp.$i"
+    cp "./config/sshd_config" $SSHD_CONFIG_TMP
+    replace_token "PORT_NUM" "6540$i" $SSHD_CONFIG_TMP
+    cp $SSHD_CONFIG_TMP "$SYS_DIR/etc/ssh/sshd_config"
+    rm $SSHD_CONFIG_TMP
 
-        rm $RASPBIAN_TMP_IMAGE_FILE
+    sync
 
-        echo "Provisioning complete. You may now remove the disk."
-        read -p "Press enter to continue..."
-    done
+    umount $BOOT_DIR
+    umount $SYS_DIR
+
+    dd bs=1M if="$RASPBIAN_TMP_IMAGE_FILE" of="$USER_DISK_PATH" conv=fsync status=progress
+
+    sync
+
+    rm $RASPBIAN_TMP_IMAGE_FILE
+
+    echo "Provisioning complete. You may now remove the disk."
+    read -p "Press enter to continue..."
 }
 
 # Main execution
 get_raspbian_img
 set_raspbian_img_data
-modify_global_image
-modify_individual_images
 
-#rm -r $TMP_DIR
+modify_global_image
+
+for s in `seq 1 $SYSTEM_COUNT`;
+do
+    modify_individual_image $s
+done
+
+rm -r $TMP_DIR
