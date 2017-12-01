@@ -33,3 +33,34 @@ function replace_token()
 
     sed -i "s/{{$TOKEN}}/$REPLACE/g" $FILE
 }
+
+function echo_line()
+{
+    char=$1
+    num=$2
+
+    out=""
+    
+    for s in `seq 1 $2`;
+    do
+        out=$out"$1"
+    done
+
+    echo $out
+}
+
+function echo_header()
+{
+    echo_line "=" 80
+    echo $1
+    echo_line "=" 80
+}
+
+function echo_subheader()
+{
+    echo_line "-" 80
+    echo $1
+    echo_line "-" 80
+}
+
+echo_header "This is a test"

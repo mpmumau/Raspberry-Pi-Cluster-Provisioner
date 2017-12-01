@@ -67,16 +67,18 @@ RASPBIAN_ZIP_FILE="$TMP_DIR/$RASPBIAN_FILE_ALIAS.zip"
 
 # Image and system names
 SYSTEM_NAMES=(
-        'orange'
-        'blue'
-        'black'
-        'purple'
-        'red'
-        'yellow'
-        'white'
-        'green'
-    )
+    'orange'
+    'blue'
+    'black'
+    'purple'
+    'red'
+    'yellow'
+    'white'
+    'green'
+)
 SYSTEM_COUNT=$(array_count ${SYSTEM_NAMES[@]})
+
+SYSTEM_USER_NAME="pirate"
 
 # Returns the system name from the systems array for the given number.
 function get_system_name()
@@ -125,7 +127,7 @@ function modify_global_image()
     touch "$BOOT_DIR/ssh"
 
     # Make Pi ssh directory
-    PI_SSH_DIR="$SYS_DIR/home/pi/.ssh"
+    PI_SSH_DIR="$SYS_DIR/home/$SYSTEM_USER_NAME/.ssh"
     if [ ! -d $PI_SSH_DIR ]; then
         mkdir $PI_SSH_DIR
         chown -R 1000:1000 $PI_SSH_DIR
@@ -136,7 +138,7 @@ function modify_global_image()
     SSH_PUBLIC_KEY="$TMP_DIR/id_rsa.pub"
     SSH_PRIVATE_KEY="$TMP_DIR/id_rsa"
     ssh-keygen -f $SSH_PRIVATE_KEY -t rsa -b 4096 -N ''
-    mv $SSH_PUBLIC_KEY "$SYS_DIR/home/pi/.ssh/authorized_keys"
+    mv $SSH_PUBLIC_KEY "$PI_SSH_DIR/authorized_keys"
     mv $SSH_PRIVATE_KEY "$OUT_DIR/rpicluster_key"
 
     sync
