@@ -62,5 +62,3 @@ function echo_subheader()
     echo $1
     echo_line "-" 80
 }
-
-echo_header "This is a test"
