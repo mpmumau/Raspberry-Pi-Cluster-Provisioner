@@ -12,22 +12,6 @@
 # Include various utility functions
 source utils.sh
 
-# Console functions
-
-function echo_section_title()
-{
-    echo "============================================"
-    echo "$1"
-    echo "============================================"
-}
-
-function echo_subhead()
-{
-    echo "--------------------------------------------"
-    echo "$1"
-    echo "--------------------------------------------"
-}
-
 # Define directories used by the provisioning process.
 TMP_DIR='./tmp'
 if [ ! -d $TMP_DIR ]; then
@@ -117,7 +101,7 @@ function set_raspbian_img_data()
 # Make global configuration changes to the base image
 function modify_global_image()
 {
-    echo_subhead "Configuring global image"
+    echo_subheader "Configuring global image"
 
     #echo "sector size: $SECTOR_SIZE | boot offset: $BOOT_OFFSET | boot offset bytes: $BOOT_OFFSET_BYTES | sys offset: $SYS_OFFSET | sys_offset bytes: $SYS_OFFSET_BYTES | boot end: $BOOT_END | boot size: $BOOT_SIZE | boot size bytes: $BOOT_SIZE_BYTES"
     mount -v -o offset="$BOOT_OFFSET_BYTES",sizelimit="$BOOT_SIZE_BYTES" -t vfat "$RASPBIAN_IMAGE_FILE" $BOOT_DIR
@@ -154,13 +138,13 @@ function modify_individual_image()
     TMP_SYS_NAME=$(get_system_name $(($i - 1)))
     TMP_HOST_NAME="rpicluster_$TMP_SYS_NAME"
 
-    echo_section_title "Provisioning: $TMP_HOST_NAME"
+    echo_header "Provisioning: $TMP_HOST_NAME"
 
     echo "Insert the disk to provision, then run fdisk to get its path."
     read -p "Press enter when disk inserted..."
     read -p "Enter the path to the disk to provision: " USER_DISK_PATH
 
-    echo_subhead "Provision Config"
+    echo_subheader "Provision Config"
     printf "Hostname: \t$TMP_HOST_NAME\n"
     printf "Disk: \t\t$USER_DISK_PATH\n"
     echo "--------------------------------------------"
