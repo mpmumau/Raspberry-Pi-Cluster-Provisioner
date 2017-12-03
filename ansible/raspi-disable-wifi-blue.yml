@@ -1,14 +1,11 @@
 ---
-- hosts: all
-
-  tasks:
-  - name: Disable wifi and bluetooth on the Raspberry Pi
-    blockinfile:
-      path: /boot/config.txt
-      block: |
-          dtoverlay=pi3-disable-wifi
-          dtoverlay=pi3-disable-bt
-      state: present
-    become: yes
-    become_method: sudo
+- name: Disable wifi and bluetooth on the Raspberry Pi
+  blockinfile:
+    path: /boot/config.txt
+    block: |
+        dtoverlay=pi3-disable-wifi
+        dtoverlay=pi3-disable-bt
+    state: present
+  become: yes
+  become_method: sudo
 ...

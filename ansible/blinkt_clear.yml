@@ -1,0 +1,9 @@
+---
+- hosts: all
+
+  tasks:
+  - name: Turn of all Blinkt lights.
+    command: python /opt/blinkt/examples/rgb.py 0 0 0
+    become: yes
+    become_method: sudo
+...

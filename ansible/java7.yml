@@ -1,9 +1,0 @@
----
-- hosts: all
-
-  tasks:
-  - name: ensure java 7 is installed
-    apt: name=oracle-java7-jdk state=latest
-    become: yes
-    become_method: sudo
-...

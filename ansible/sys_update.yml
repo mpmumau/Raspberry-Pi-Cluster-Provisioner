@@ -1,0 +1,12 @@
+---
+- name: Update Aptitude repository data.
+  apt:
+    update_cache: yes
+  become: yes
+  become_method: sudo
+- name: Upgrade all system packages.
+  apt:
+    upgrade: yes
+  become: yes
+  become_method: sudo
+...

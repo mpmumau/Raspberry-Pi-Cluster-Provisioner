@@ -2,8 +2,8 @@
 - hosts: all
 
   tasks:
-  - name: remove apache
-    apt: name=apache2 state=absent
+  - name: Reboot all nodes.
+    command: reboot
     become: yes
     become_method: sudo
 ...

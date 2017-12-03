@@ -1,0 +1,6 @@
+---
+- name: Ensure Pironi Blinkt library is installed
+  apt: name=python-blinkt state=latest
+  become: yes
+  become_method: sudo
+...

@@ -62,3 +62,9 @@ function echo_subheader()
     echo $1
     echo_line "-" 80
 }
+
+function wait_for_user()
+{
+    echo_line '~' 30
+    read -p "Press enter to continue..."
+}

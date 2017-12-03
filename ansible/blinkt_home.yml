@@ -1,0 +1,9 @@
+---
+- hosts: all
+
+  tasks:
+  - name: Set all Blinkt lights to their default state
+    command: python /opt/blinkt/examples/rgb.py {{ blinkt_color }}
+    become: yes
+    become_method: sudo
+...

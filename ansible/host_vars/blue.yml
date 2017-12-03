@@ -1,0 +1,6 @@
+---
+rpi_color_name: "blue"
+rpi_http_port: 54302
+blinkt_color: "0 0 255"
+rpi_bash_color: 34
+...

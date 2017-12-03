@@ -1,0 +1,8 @@
+---
+- hosts: all
+  tasks:
+    - import_tasks: sys_update.yml
+    - import_tasks: raspi-disable-wifi-blue.yml
+    - import_tasks: blinkt.yml
+    - import_tasks: bashrc.yml
+...
